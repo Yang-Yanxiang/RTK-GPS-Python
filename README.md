@@ -20,8 +20,8 @@ sudo screen /dev/ttyS1 115200
 ```
 
 ### Connection:
-![Connection](https://github.com/Yang-Yanxiang/Arduino-Garmin-GPS-19x/blob/master/connection.png)
-![Gmarmin GPS pinout](https://github.com/Yang-Yanxiang/Arduino-Garmin-GPS-19x/blob/master/pinout.png)
+![ublox_pinout](https://github.com/Yang-Yanxiang/RTK-GPS-Python/blob/master/doc/ublox_pinout.png)
+![Upsquared pinout](https://github.com/Yang-Yanxiang/RTK-GPS-Python/blob/master/doc/up%20squared%20pinout.png)
 ### Example code:
 ```
 import mraa
