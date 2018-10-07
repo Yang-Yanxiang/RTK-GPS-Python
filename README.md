@@ -20,8 +20,10 @@ sudo screen /dev/ttyS1 115200
 ```
 
 ### Connection:
+Up_Squared pin8 <---------> ublox pin9
+Up_Squared pin10 <---------> ublox pin10
 ![ublox_pinout](https://github.com/Yang-Yanxiang/RTK-GPS-Python/blob/master/doc/ublox_pinout.png)
-![Upsquared pinout](https://github.com/Yang-Yanxiang/RTK-GPS-Python/blob/master/doc/up%20squared%20pinout.png)
+![Up_squared pinout](https://github.com/Yang-Yanxiang/RTK-GPS-Python/blob/master/doc/up%20squared%20pinout.png)
 ### Example code:
 ```
 import mraa
