@@ -46,22 +46,40 @@ def dis_in_meter(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1-a))
     return earth_radius * c
 
-# Start a neverending loop waiting for data to arrive.
-# Press Ctrl+C to get out of it.
-prev_lat = 0
-prev_lon = 0
-while True:
-    if u.dataAvailable():
-        # We are doing 1-byte reads here
-        data = u.readStr(60)
-        if data.startswith('$GNRMC'):
-            lat, lon, speed = parse_data(data)
-            lat, lon = convert_DDMM_to_DD(lat, lon)
-            dis = dis_in_meter(prev_lat, prev_lon, lat, lon)
-            prev_lat = lat
-            prev_lon = lon
-            print(lat)
-            print(lon)
-            print('distance: ', dis)
+def log_data(filename, lat, lon):
+    with open(filename, 'a') as f:
+        f.write('lat: ' + str(lat) +'\n')
+        f.write('lon: ' + str(lon) +'\n')
+
+def acc_mean(cur_m_lat, cur_m_lon, lat, lon, n):
+    res_lat = cur_m_lat * (n / (n + 1.0)) + lat / (n + 1)
+    res_lon = cur_m_lon * (n / (n + 1.0)) + lon / (n + 1)
+    return res_lat, res_lon
+
+def run():
+    count = 0
+    NUM_FILES = 5
+    file_index = 0
+    FILE_CAP = 10000
+    while True:
+        if u.dataAvailable():
+            # We are doing 60-byte reads here
+            data = u.readStr(60)
+            if data.startswith('$GNRMC'):
+                lat, lon, speed = parse_data(data)
+                lat, lon = convert_DDMM_to_DD(lat, lon)
+
+                log_data('logfile' + file_index + '.txt', lat, lon)
+                count += 1
+                if count == FILE_CAP:
+                    file_index += 1  #Every file record just 10 thousand pieces of data
+                    file_index %= NUM_FILES
+        
+
+if __name__ == '__main__':
+    run()
+
+
+
 
         
