@@ -3,13 +3,46 @@ import time
 import sys
 from math import *
 
-# serial port
-port = "/dev/ttyS5"
-u = mraa.Uart(port)
+
+from digi.xbee.devices import XBeeDevice
+
+
+# seting up GPS serial port
+gps_port = "/dev/ttyS5"
+u = mraa.Uart(gps_port)
 
 u.setBaudRate(19200)
 u.setMode(8, mraa.UART_PARITY_NONE, 1)
 u.setFlowcontrol(False, False)
+
+
+# seting up xbee port
+# TODO: Replace with the serial port where your local module is connected to. 
+xbee_port = "/dev/ttyUSB0"
+# TODO: Replace with the baud rate of your local module.
+xbee_baud_rate = 9600
+
+remote_model_id = "REMOTE"
+
+device = XBeeDevice(xbee_port, xbee_baud_rate)
+
+
+def connect():
+    device.open()
+    # Obtain the remote XBee device from the XBee network.
+    xbee_network = device.get_network()
+    remote_device = xbee_network.discover_device(REMOTE_NODE_ID)
+    return remote_device
+
+
+def disconnect():
+    if device is not None and device.is_open():
+        device.close()
+
+def send_data(remote_device, data):
+    print("Sending data to %s >> %s..." % (remote_device.get_64bit_addr(), data))
+    device.send_data(remote_device, data)
+    print("Success")
 
 def parse_data(data):
     splited_data = data.split(',')
@@ -57,29 +90,35 @@ def acc_mean(cur_m_lat, cur_m_lon, lat, lon, n):
     return res_lat, res_lon
 
 def run():
-    count = 0
-    NUM_FILES = 5
-    file_index = 0
-    FILE_CAP = 10000
-    while True:
-        if u.dataAvailable():
-            # We are doing 60-byte reads here
-            data = u.readStr(60)
-            if data.startswith('$GNRMC'):
-                lat, lon, speed = parse_data(data)
-                lat, lon = convert_DDMM_to_DD(lat, lon)
-
-                log_data('logfile' + file_index + '.txt', lat, lon)
-                count += 1
-                if count == FILE_CAP:
-                    file_index += 1  #Every file record just 10 thousand pieces of data
-                    file_index %= NUM_FILES
+    try:
+        count = 0
+        NUM_FILES = 5
+        file_index = 0
+        FILE_CAP = 10000
+        remote_device = connect()
+        if not remote_device:
+            print("connection error!")
+        while True:
+            if u.dataAvailable():
+                # We are doing 60-byte reads here
+                data = u.readStr(60)
+                if data.startswith('$GNRMC'):
+                    lat, lon, speed = parse_data(data)
+                    lat, lon = convert_DDMM_to_DD(lat, lon)
+                    #store data in local txt file
+                    log_data('logfile' + file_index + '.txt', lat, lon)
+                    # compress lat and lon and speed
+                    data = "lat: " + lat + "\n" + "lon: " + lon + "\n" + "speed: " + lat + "\n "
+                    #send data to remote device
+                    send_data(remote_device, data)
+                    count += 1
+                    if count == FILE_CAP:
+                        #Every file record just 10 thousand pieces of data
+                        file_index += 1    
+                        file_index %= NUM_FILES
+                        break
+    finally:
+        disconnect()
         
-
 if __name__ == '__main__':
     run()
-
-
-
-
-        
