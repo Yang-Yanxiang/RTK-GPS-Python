@@ -3,9 +3,7 @@ import time
 import sys
 from math import *
 
-
 from digi.xbee.devices import XBeeDevice
-
 
 # seting up GPS serial port
 gps_port = "/dev/ttyS5"
@@ -31,7 +29,7 @@ def connect():
     device.open()
     # Obtain the remote XBee device from the XBee network.
     xbee_network = device.get_network()
-    remote_device = xbee_network.discover_device(REMOTE_NODE_ID)
+    remote_device = xbee_network.discover_device(remote_model_id)
     return remote_device
 
 
@@ -106,9 +104,9 @@ def run():
                     lat, lon, speed = parse_data(data)
                     lat, lon = convert_DDMM_to_DD(lat, lon)
                     #store data in local txt file
-                    log_data('logfile' + file_index + '.txt', lat, lon)
+                    log_data('logfile' + str(file_index) + '.txt', lat, lon)
                     # compress lat and lon and speed
-                    data = "lat: " + lat + "\n" + "lon: " + lon + "\n" + "speed: " + lat + "\n "
+                    data = "lat: " + str(lat) + "\n" + "lon: " + str(lon) + "\n" + "speed: " + str(lat) + "\n "
                     #send data to remote device
                     send_data(remote_device, data)
                     count += 1
